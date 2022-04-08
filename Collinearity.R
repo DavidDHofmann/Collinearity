@@ -11,6 +11,7 @@ library(GGally)
 library(broom)
 library(pbmcapply)
 library(MuMIn)
+library(ggpubr)
 
 ################################################################################
 #### What is Collinearity
@@ -241,3 +242,41 @@ ggplot(results_plot, aes(x = estimate)) +
   theme_light() +
   theme(panel.grid = element_line(colour = "gray92")) +
   xlab(expression(hat(beta)))
+
+################################################################################
+#### Show that Collinearity only looks at LINEAR relationships
+################################################################################
+# Simulate covariates. Note that all covariates are almost perfectly related to
+# x0
+x0 <- seq(-2 * pi, +2 * pi, length.out = 1000)
+x1 <- 2 * x0 + rnorm(length(x0), sd = 1)
+x2 <- 0.1 * x0 ** 3 + rnorm(length(x0), sd = 1)
+x3 <- x0 ** 2 + rnorm(length(x0), sd = 1)
+x4 <- sin(x0) + rnorm(length(x0), sd = 0.1)
+
+# Put all into a dataframe
+df <- data.frame(x0, x1, x2, x3, x4)
+
+# Plot
+p1 <- ggplot(df, aes(x = x0, y = x1)) +
+  geom_point(col = "gray30") +
+  ggtitle(paste0("Correlation = ", round(cor(x0, x1), 2))) +
+  theme_minimal() +
+  theme(panel.grid = element_line(colour = "gray95"))
+p2 <- ggplot(df, aes(x = x0, y = x2)) +
+  geom_point(col = "gray30") +
+  ggtitle(paste0("Correlation = ", round(cor(x0, x2), 2))) +
+  theme_minimal() +
+  theme(panel.grid = element_line(colour = "gray95"))
+p3 <- ggplot(df, aes(x = x0, y = x3)) +
+  geom_point(col = "gray30") +
+  ggtitle(paste0("Correlation = ", round(cor(x0, x3), 2))) +
+  theme_minimal() +
+  theme(panel.grid = element_line(colour = "gray95"))
+p4 <- ggplot(df, aes(x = x0, y = x4)) +
+  geom_point(col = "gray30") +
+  ggtitle(paste0("Correlation = ", round(cor(x0, x4), 2))) +
+  theme_minimal() +
+  theme(panel.grid = element_line(colour = "gray95"))
+ggarrange(p1, p2, p3, p4)
+ggsave("test.png", plot = last_plot(), width = 10, height = 5, bg = "white")
